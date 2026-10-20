@@ -18,4 +18,8 @@
 2. Trên Render chọn **New → Blueprint**, kết nối repository và xác nhận cấu hình từ `render.yaml`.
 3. Sau khi build xong, Render cung cấp URL ứng dụng. Giao diện tự co giãn cho desktop và mobile.
 
+### Nếu Render báo vượt giới hạn bộ nhớ
+
+`render.yaml` đã cấu hình một Gunicorn worker với `--preload`. Không tăng số worker trên gói RAM nhỏ vì mỗi worker có thể làm tăng đáng kể bộ nhớ khi dùng pandas và scikit-learn. Sau khi cập nhật repository, chọn **Manual Deploy → Deploy latest commit** trên Render.
+
 > Giá dự đoán có đơn vị **tỷ VNĐ** như cột `Price` trong bộ dữ liệu.

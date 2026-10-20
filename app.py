@@ -35,6 +35,11 @@ def load_bundle():
     return joblib.load(MODEL_PATH)
 
 
+# Tải trước khi Gunicorn tạo worker. Với cờ --preload, các vùng nhớ chỉ đọc của
+# pandas/scikit-learn và mô hình có thể được dùng chung thay vì nhân bản theo worker.
+MODEL_BUNDLE = load_bundle()
+
+
 def input_defaults():
     values = {key: "" for key, *_ in NUMERIC_FIELDS}
     values.update({key: "Không xác định" for key, _ in CATEGORICAL_FIELDS})
@@ -43,7 +48,7 @@ def input_defaults():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    bundle = load_bundle()
+    bundle = MODEL_BUNDLE
     values = input_defaults()
     prediction = None
     error = None
