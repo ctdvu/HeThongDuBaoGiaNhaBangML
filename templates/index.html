@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dự đoán giá nhà tại Việt Nam bằng học máy">
+  <title>Dự đoán giá nhà Việt Nam</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Vietnam Housing ML</p>
+      <h1>Dự đoán giá nhà</h1>
+      <p>Ước tính giá bất động sản từ các đặc điểm của căn nhà.</p>
+      {% if bundle %}<span class="model-chip">Mô hình đang dùng: {{ bundle.model_name }}</span>{% endif %}
+    </header>
+
+    {% if not bundle %}
+    <section class="notice warning">
+      Chưa tìm thấy mô hình. Hãy chạy toàn bộ notebook <code>housing_model_training.ipynb</code> để tạo file mô hình trước khi chạy ứng dụng.
+    </section>
+    {% else %}
+    <div class="layout">
+      <form class="prediction-form" method="post">
+        <h2>Thông tin bất động sản</h2>
+        <div class="form-grid">
+          {% for key, label, unit, min, max, step in numeric_fields %}
+          <label>
+            <span>{{ label }} <small>({{ unit }})</small></span>
+            <input type="number" name="{{ key }}" value="{{ values[key] }}" min="{{ min }}" max="{{ max }}" step="{{ step }}" {% if key == 'Area' %}required{% endif %}>
+          </label>
+          {% endfor %}
+          {% for key, label in categorical_fields %}
+          <label>
+            <span>{{ label }}</span>
+            <select name="{{ key }}">
+              {% for option in category_values.get(key, ['Không xác định']) %}
+              <option value="{{ option }}" {% if values[key] == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          {% endfor %}
+        </div>
+        <button type="submit">Dự đoán giá</button>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+      </form>
+
+      <aside class="result-card" aria-live="polite">
+        <p class="eyebrow">Kết quả ước tính</p>
+        {% if prediction is not none %}
+          <strong>{{ '{:,.2f}'.format(prediction) }} tỷ VNĐ</strong>
+          <p>Đây là mức dự đoán tham khảo dựa trên dữ liệu huấn luyện.</p>
+        {% else %}
+          <strong>—</strong>
+          <p>Nhập thông tin căn nhà rồi nhấn “Dự đoán giá”.</p>
+        {% endif %}
+        <dl>
+          <div><dt>Chỉ số R²</dt><dd>{{ '%.3f'|format(bundle.metrics.r2) }}</dd></div>
+          <div><dt>MAE</dt><dd>{{ '%.3f'|format(bundle.metrics.mae) }} tỷ</dd></div>
+        </dl>
+      </aside>
+    </div>
+    {% endif %}
+  </main>
+</body>
+</html>
